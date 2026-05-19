@@ -29,7 +29,8 @@ try {
 
 # 3. Install vnstock-agent
 Write-Host "[3/5] Installing vnstock-agent..." -ForegroundColor Yellow
-pip install git+https://github.com/mrgoonie/vnstock-agent.git -q
+$vendorPath = Join-Path $PSScriptRoot "..\vendor\vnstock-agent"
+pip install --user $vendorPath -q
 Write-Host "      OK: vnstock-agent installed" -ForegroundColor Green
 Write-Host "      -> Get free API key at: https://vnstocks.com/login (optional)" -ForegroundColor Gray
 

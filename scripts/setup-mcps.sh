@@ -25,7 +25,8 @@ echo "      OK: $(node --version)"
 
 # ── 3. Install vnstock-agent ──────────────────────────────────────────────────
 echo "[3/4] Installing vnstock-agent..."
-pip install git+https://github.com/mrgoonie/vnstock-agent.git -q
+VENDOR_PATH="$(cd "$(dirname "$0")/../vendor/vnstock-agent" && pwd)"
+pip install --user "$VENDOR_PATH" -q
 echo "      OK: vnstock-agent installed"
 echo "      → Get free API key at: https://vnstocks.com/login"
 echo "      → Set: export VNSTOCK_API_KEY=your_key"

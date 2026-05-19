@@ -117,7 +117,8 @@ Tải TradingView Desktop từ https://www.tradingview.com/desktop
 Mở PowerShell hoặc Terminal, chạy:
 
 ```powershell
-pip install git+https://github.com/mrgoonie/vnstock-agent.git
+# Source vnstock-agent đã có sẵn trong repo (vendor/vnstock-agent)
+pip install ./vendor/vnstock-agent
 ```
 
 Kiểm tra:
@@ -366,7 +367,7 @@ Kiểm tra kết nối TradingView: dùng tv_health_check
 → Tắt hoàn toàn Claude Desktop (kể cả system tray) rồi mở lại.
 
 **❌ vnstock-mcp lỗi "command not found"**
-→ Chạy lại: `pip install git+https://github.com/mrgoonie/vnstock-agent.git`
+→ Chạy lại từ thư mục repo: `pip install ./vendor/vnstock-agent`
 → Thử thay `"command": "vnstock-mcp"` thành `"command": "python"` và `"args": ["-m", "vnstock_agent.mcp"]` trong `claude_desktop_config.json`.
 
 **❌ Cài đặt Windows: "execution policy" error**
@@ -392,6 +393,8 @@ vn-trading-analyst/
 │       ├── vn-fundamental/   # Cơ bản via vnstock
 │       ├── vn-market/        # Tổng quan thị trường
 │       └── vn-report/        # Xuất báo cáo HTML
+├── vendor/
+│   └── vnstock-agent/           # Source vnstock-agent (MIT, mrgoonie) — vendored
 ├── config/
 │   └── claude-desktop-config-template.json   # Template cấu hình MCP
 ├── scripts/
@@ -403,11 +406,13 @@ vn-trading-analyst/
 
 ---
 
-## Credits
+## Credits & Third-party
 
-- [thinh-vu/vnstock](https://github.com/thinh-vu/vnstock) — thư viện dữ liệu CK VN
-- [mrgoonie/vnstock-agent](https://github.com/mrgoonie/vnstock-agent) — MCP server vnstock
-- [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) — TradingView MCP
+| Component | Source | License |
+|-----------|--------|---------|
+| `vendor/vnstock-agent/` | [mrgoonie/vnstock-agent](https://github.com/mrgoonie/vnstock-agent) — vendored vào repo | MIT |
+| `vnstock` (Python lib, cài qua pip) | [thinh-vu/vnstock](https://github.com/thinh-vu/vnstock) | — |
+| `tradingview-mcp` (clone vào `~/tradingview-mcp`) | [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) | — |
 
 ---
 

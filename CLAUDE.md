@@ -55,13 +55,13 @@ Nếu thiếu → DỪNG và báo user link tải. KHÔNG tự cài Python/Node/
 
 ## Bước 3 — Install vnstock-agent
 
-**Lệnh ĐÚNG (package KHÔNG có trên PyPI, phải cài từ GitHub):**
+**Lệnh ĐÚNG (source đã vendor sẵn trong repo, không cần clone từ GitHub):**
 
 ```bash
-pip install --user git+https://github.com/mrgoonie/vnstock-agent.git
+pip install --user ./vendor/vnstock-agent
 ```
 
-> ⚠️ **KHÔNG dùng** `pip install vnstock-agent` — package không tồn tại trên PyPI.
+> Source nằm tại `vendor/vnstock-agent/` (MIT license, attribution: mrgoonie). pip sẽ tự cài các dependency (`vnstock`, `fastmcp`, `click`, `pandas`...) từ PyPI.
 
 Verify: `vnstock-mcp --help` phải hiện help text.
 
@@ -203,14 +203,14 @@ Sau khi xong setup, tự verify và báo user dạng bảng:
 
 | Lỗi | Fix |
 |-----|-----|
-| `vnstock-agent: not found on PyPI` | Dùng `pip install git+https://github.com/mrgoonie/vnstock-agent.git` |
+| `vnstock-agent: not found on PyPI` | Dùng `pip install ./vendor/vnstock-agent` (source nằm sẵn trong repo) |
 | `vnstock-mcp: command not found` sau khi pip install | Thêm Scripts folder vào PATH, hoặc đổi config thành `"command":"python","args":["-m","vnstock_agent.mcp"]` |
 | `tv_health_check` fail / fetch failed | TradingView chưa chạy với debug port — chạy lại Bước 7 |
 | Skills không xuất hiện | Restart Claude hoàn toàn (cả tray icon) |
 | MCP không load trong Claude Code CLI | `cd` vào đúng thư mục repo trước khi gõ `claude` |
 | Execution policy error | `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trước khi chạy script |
 | MSIX TradingView không tìm thấy | Chạy `launch-tv-msix.ps1` từ PowerShell **Admin** |
-| `pip install` denied bởi sandbox | Báo user chạy thủ công lệnh `pip install --user git+https://github.com/mrgoonie/vnstock-agent.git` ngoài Claude |
+| `pip install` denied bởi sandbox | Báo user chạy thủ công: `pip install --user ./vendor/vnstock-agent` (chạy từ thư mục repo) |
 
 ---
 
@@ -227,6 +227,8 @@ vn-stock-ai-trading/
 │   ├── vn-fundamental/
 │   ├── vn-market/
 │   └── vn-report/
+├── vendor/
+│   └── vnstock-agent/           ← source vendored từ mrgoonie/vnstock-agent (MIT)
 ├── config/
 │   └── claude-desktop-config-template.json
 └── scripts/
