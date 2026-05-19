@@ -8,101 +8,295 @@
 
 ---
 
-## Kiến trúc
+## Mục lục
 
-```
-/vn-analyze VCB
-       │
-       ├─── Agent 1: TradingView MCP ──→ Chart, giá realtime, RSI/MACD
-       ├─── Agent 2: vnstock MCP ────→ BCTC, P/E, ROE, tin tức
-       └─── Agent 3: vnstock MCP ────→ VN-Index, VN30, dòng tiền ngành
-                     │
-              Tổng hợp Trade Score (0–100)
-                     │
-         Khuyến nghị + Kế hoạch giao dịch
-```
-
-**Hai MCP nguồn dữ liệu:**
-- **TradingView MCP** ([tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp)): Biểu đồ kỹ thuật, giá realtime, screenshot chart, indicator, alert
-- **vnstock MCP** ([mrgoonie/vnstock-agent](https://github.com/mrgoonie/vnstock-agent)): Dữ liệu CK VN — BCTC, P/E, ROE, tin tức, bảng giá, intraday
+1. [Cách hoạt động](#cách-hoạt-động)
+2. [Yêu cầu trước khi cài](#yêu-cầu-trước-khi-cài)
+3. [Cài đặt từng bước](#cài-đặt-từng-bước)
+   - [Bước 1 — Python](#bước-1--python)
+   - [Bước 2 — Node.js](#bước-2--nodejs)
+   - [Bước 3 — Claude Desktop](#bước-3--claude-desktop)
+   - [Bước 4 — TradingView Desktop](#bước-4--tradingview-desktop)
+   - [Bước 5 — vnstock-agent](#bước-5--vnstock-agent-mcp)
+   - [Bước 6 — tradingview-mcp](#bước-6--tradingview-mcp)
+   - [Bước 7 — Cấu hình Claude Desktop](#bước-7--cấu-hình-claude-desktop)
+   - [Bước 8 — Cài Skills](#bước-8--cài-skills)
+   - [Bước 9 — Khởi động TradingView](#bước-9--khởi-động-tradingview-mỗi-lần-dùng)
+4. [Kiểm tra hoạt động](#kiểm-tra-hoạt-động)
+5. [Các lệnh](#các-lệnh)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## Cài đặt
+## Cách hoạt động
 
-### 1. Yêu cầu
-
-| Yêu cầu | Phiên bản |
-|---------|-----------|
-| Python | ≥ 3.8 |
-| Node.js | ≥ 18 |
-| Claude Desktop | Bất kỳ |
-| TradingView Desktop | Bất kỳ (free account OK) |
-
-### 2. Chạy setup tự động
-
-```bash
-git clone https://github.com/haivv-002/vn-trading-analyst.git
-cd vn-trading-analyst
-bash scripts/setup-mcps.sh
+```
+Bạn gõ: /vn-analyze VCB
+              │
+    ┌─────────┴──────────┐
+    │                    │
+TradingView MCP      vnstock MCP
+(chart, giá,         (BCTC, P/E,
+ RSI, volume)         ROE, tin tức)
+    │                    │
+    └─────────┬──────────┘
+              │
+       Claude tổng hợp
+              │
+    Trade Score 0–100
+    + Kế hoạch giao dịch
 ```
 
-Script sẽ tự cài `vnstock-agent` (pip) và clone `tradingview-mcp` (npm).
+**Hai nguồn dữ liệu:**
+- **TradingView MCP**: Biểu đồ, giá realtime, indicator kỹ thuật, alert, screenshot chart
+- **vnstock MCP**: Báo cáo tài chính, P/E, ROE, tin tức, bảng giá VN30, intraday
 
-### 3. Lấy vnstock API key (miễn phí)
+---
 
-Truy cập https://vnstocks.com/login → đăng ký → lấy API key.
+## Yêu cầu trước khi cài
 
-### 4. Cấu hình Claude Desktop
+| Phần mềm | Mục đích | Tải về |
+|----------|----------|--------|
+| **Python ≥ 3.8** | Chạy vnstock-agent | [python.org](https://www.python.org/downloads/) |
+| **Node.js ≥ 18** | Chạy tradingview-mcp | [nodejs.org](https://nodejs.org/) |
+| **Git** | Clone repo | [git-scm.com](https://git-scm.com/downloads) |
+| **Claude Desktop** | Dùng Claude + MCP | [claude.ai/download](https://claude.ai/download) |
+| **TradingView Desktop** | Hiển thị chart | [tradingview.com/desktop](https://www.tradingview.com/desktop/) |
+| **Tài khoản TradingView** | Đăng nhập app (free OK) | [tradingview.com](https://www.tradingview.com/) |
 
-Copy `config/claude-desktop-config-template.json` vào:
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+---
 
-Thay `<YOUR_USERNAME>` và `your_api_key_here` bằng giá trị thực.
+## Cài đặt từng bước
 
-### 5. Khởi động TradingView với debug port
+### Bước 1 — Python
 
-**Windows (bản Store/MSIX)** — chạy PowerShell as Administrator:
+Tải và cài Python từ https://python.org/downloads  
+> ⚠️ Khi cài trên Windows, tick vào **"Add Python to PATH"**
+
+Kiểm tra:
+```powershell
+python --version   # phải ra Python 3.x.x
+pip --version
+```
+
+---
+
+### Bước 2 — Node.js
+
+Tải và cài Node.js LTS từ https://nodejs.org
+
+Kiểm tra:
+```powershell
+node --version   # phải ra v18+ hoặc cao hơn
+```
+
+---
+
+### Bước 3 — Claude Desktop
+
+Tải Claude Desktop từ https://claude.ai/download → cài và đăng nhập.
+
+> Claude Desktop là bắt buộc — bản web (claude.ai trên trình duyệt) không hỗ trợ MCP.
+
+---
+
+### Bước 4 — TradingView Desktop
+
+Tải TradingView Desktop từ https://www.tradingview.com/desktop  
+→ Mở app → đăng nhập tài khoản TradingView (free account là đủ).
+
+> **Lưu ý bản Windows Store (MSIX)**: Xem Bước 9 để cách khởi động đúng.
+
+---
+
+### Bước 5 — vnstock-agent (MCP)
+
+Mở PowerShell hoặc Terminal, chạy:
+
+```powershell
+pip install vnstock-agent
+```
+
+Kiểm tra:
+```powershell
+vnstock-mcp --help   # phải hiển thị help text
+```
+
+**Lấy API key miễn phí (tuỳ chọn — không có vẫn dùng được ở Guest mode):**
+1. Vào https://vnstocks.com/login
+2. Đăng nhập bằng Google
+3. Copy API key → dùng ở Bước 7
+
+> **Hiện tại** (tháng 5/2026): vnstocks.com đang có lỗi OAuth Google. Nếu không đăng nhập được, bỏ qua API key — Guest mode vẫn hoạt động với giới hạn 20 req/phút.
+
+---
+
+### Bước 6 — tradingview-mcp
+
+Mở PowerShell, chạy:
+
+```powershell
+cd $HOME
+git clone https://github.com/tradesdontlie/tradingview-mcp.git
+cd tradingview-mcp
+npm install
+```
+
+Sau khi xong, thư mục sẽ nằm tại:
+- Windows: `C:\Users\<TÊN_BẠN>\tradingview-mcp`
+- macOS/Linux: `~/tradingview-mcp`
+
+---
+
+### Bước 7 — Cấu hình Claude Desktop
+
+**Windows:**
+
+1. Mở File Explorer → paste vào thanh địa chỉ: `%APPDATA%\Claude` → Enter
+2. Mở file `claude_desktop_config.json` bằng Notepad (tạo mới nếu chưa có)
+3. Paste nội dung sau, **thay `<TÊN_BẠN>`** bằng username Windows của bạn:
+
+```json
+{
+  "mcpServers": {
+    "tradingview": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\<TÊN_BẠN>\\tradingview-mcp\\src\\server.js"
+      ]
+    },
+    "vnstock": {
+      "command": "vnstock-mcp",
+      "env": {
+        "VNSTOCK_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+> Nếu không có API key, xoá dòng `"VNSTOCK_API_KEY"` đi — vnstock vẫn chạy ở Guest mode.
+
+> Nếu đã có MCP khác trong file (ví dụ obsidian), chỉ thêm 2 entry `tradingview` và `vnstock` vào `mcpServers`, không xoá phần còn lại.
+
+**macOS:**
+
+File config nằm tại: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Thay đường dẫn args thành:
+```json
+"args": ["/Users/<TÊN_BẠN>/tradingview-mcp/src/server.js"]
+```
+
+---
+
+### Bước 8 — Cài Skills
+
+Clone repo này về máy (nếu chưa có):
+
+```powershell
+git clone https://github.com/andyluu98/vn-trading-analyst.git
+cd vn-trading-analyst
+```
+
+**Copy skills vào Claude Code:**
+
+Windows (PowerShell):
+```powershell
+# Tạo thư mục nếu chưa có
+New-Item -ItemType Directory -Force -Path "$HOME\.claude\skills"
+
+# Copy 5 skills
+Copy-Item -Recurse -Force ".claude\skills\*" "$HOME\.claude\skills\"
+```
+
+macOS/Linux:
+```bash
+mkdir -p ~/.claude/skills
+cp -r .claude/skills/* ~/.claude/skills/
+```
+
+Kiểm tra:
+```powershell
+ls "$HOME\.claude\skills"
+# Phải thấy: vn-analyze  vn-technical  vn-fundamental  vn-market  vn-report
+```
+
+---
+
+### Bước 9 — Khởi động TradingView (Mỗi lần dùng)
+
+TradingView phải chạy với debug port trước khi mở Claude Desktop.
+
+**Windows — bản Microsoft Store (MSIX):**
+
+Mở **PowerShell as Administrator** (chuột phải → Run as administrator):
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-& "scripts\launch-tv-msix.ps1"
+& "C:\Users\<TÊN_BẠN>\vn-trading-analyst\scripts\launch-tv-msix.ps1"
 ```
 
-**Windows (bản .exe trực tiếp)**:
+Đợi đến khi thấy dòng:
 ```
-scripts\launch_tv_debug.bat
+DevTools listening on ws://127.0.0.1:9222/...
+```
+→ TradingView đã sẵn sàng.
+
+**Windows — bản .exe trực tiếp:**
+```
+C:\Users\<TÊN_BẠN>\vn-trading-analyst\scripts\launch_tv_debug.bat
 ```
 
-**macOS/Linux**:
+**macOS/Linux:**
 ```bash
 ~/tradingview-mcp/scripts/launch_tv_debug_mac.sh
 ```
 
-### 6. Cài skills vào Claude Code
+> 💡 **Tip**: Tạo shortcut file `.ps1` hoặc `.bat` ra Desktop để 1 click mỗi ngày.
 
-```bash
-# Copy skills vào thư mục skills của Claude Code
-cp -r .claude/skills/* ~/.claude/skills/
+---
+
+## Kiểm tra hoạt động
+
+Sau khi hoàn thành các bước trên:
+
+1. **Khởi động TradingView** (Bước 9)
+2. **Tắt hoàn toàn Claude Desktop** (kể cả icon dưới taskbar) → mở lại
+3. Trong cửa sổ chat mới, gõ từng lệnh sau để kiểm tra:
+
 ```
+Kiểm tra kết nối TradingView: dùng tv_health_check
+```
+✅ Thành công nếu thấy `"cdp_connected": true`
 
-Restart Claude Desktop → bắt đầu sử dụng.
+```
+/vn-market
+```
+✅ Thành công nếu Claude trả về tổng quan VN-Index, VN30
+
+```
+/vn-technical VCB
+```
+✅ Thành công nếu Claude chụp chart VCB và phân tích kỹ thuật
 
 ---
 
 ## Các lệnh
 
-| Lệnh | Mô tả |
-|------|-------|
-| `/vn-analyze VCB` | 🏆 **Flagship** — Phân tích toàn diện, Trade Score 0-100, kế hoạch giao dịch |
-| `/vn-technical VCB` | 📈 Kỹ thuật nhanh — xu hướng, hỗ trợ/kháng cự, tín hiệu vào lệnh |
-| `/vn-fundamental VCB` | 📋 Cơ bản sâu — BCTC, định giá, so sánh ngành |
-| `/vn-market` | 🌐 Tổng quan thị trường — VN-Index, VN30, top tăng/giảm |
-| `/vn-report VCB` | 📄 Xuất báo cáo HTML đầy đủ (mở trên trình duyệt) |
+| Lệnh | Mô tả | Thời gian |
+|------|-------|-----------|
+| `/vn-analyze VCB` | 🏆 Phân tích toàn diện — Trade Score 0-100, kế hoạch giao dịch | ~2-3 phút |
+| `/vn-technical VCB` | 📈 Kỹ thuật nhanh — xu hướng, hỗ trợ/kháng cự, tín hiệu vào | ~30 giây |
+| `/vn-fundamental VCB` | 📋 Cơ bản sâu — BCTC, P/E, ROE, định giá nội tại | ~1 phút |
+| `/vn-market` | 🌐 Tổng quan thị trường — VN-Index, VN30, top tăng/giảm | ~30 giây |
+| `/vn-report VCB` | 📄 Xuất báo cáo HTML đầy đủ mở trên trình duyệt | ~3-5 phút |
+
+**Ví dụ mã CK có thể dùng:**
+`VCB` `VNM` `FPT` `HPG` `MWG` `TCB` `BID` `CTG` `ACB` `VIC` `SSI` `VHM`
 
 ---
 
-## Ví dụ output
+## Ví dụ output `/vn-analyze VCB`
 
 ```
 ═══════════════════════════════════════
@@ -116,19 +310,17 @@ Restart Claude Desktop → bắt đầu sử dụng.
    Xu hướng: Tăng ngắn hạn sau đáy 56,500
    Hỗ trợ: 62,000 đ  |  Kháng cự: 66,700 đ
    Volume: 2.7× TB — xác nhận breakout mạnh
-   Tín hiệu: Breakout khối lượng lớn 2 phiên liên tiếp
 
 📋 CƠ BẢN (26/35)
    P/E: 12.3  |  P/B: 2.1  |  ROE: 18.5%
    Doanh thu YoY: +14%  |  LNST YoY: +22%
-   Đánh giá: Định giá hợp lý, tăng trưởng tốt
 
 🌐 THỊ TRƯỜNG (14/20)
    VN-Index: Hồi phục từ vùng hỗ trợ 1,200
    Ngành NH: Outperform thị trường +3.2%
 
 ⚠️ RỦI RO (6/10)
-   Lãi suất tăng, nợ xấu tiềm ẩn hậu COVID
+   Lãi suất, nợ xấu tiềm ẩn
 
 🎯 KẾ HOẠCH GIAO DỊCH
    Vùng mua: 62,000 – 64,000 đ
@@ -139,14 +331,42 @@ Restart Claude Desktop → bắt đầu sử dụng.
 
 ---
 
-## Nguồn dữ liệu
+## Nguồn dữ liệu & Độ trễ
 
 | Dữ liệu | Nguồn | Độ trễ |
 |---------|-------|--------|
-| Giá realtime, chart | TradingView (FXCM/HOSE) | ~15 phút (free plan) |
-| Intraday, bảng giá | vnstock → VCI/KBS | Vài giây |
+| Giá, chart HOSE/HNX | TradingView | ~15 phút (free plan) |
+| Intraday, bảng giá realtime | vnstock → VCI/KBS | Vài giây |
 | BCTC, P/E, ROE | vnstock → TCBS/VCI | Ngày |
-| Tin tức | vnstock → nhiều nguồn | Vài giờ |
+| Tin tức, sự kiện | vnstock → nhiều nguồn | Vài giờ |
+
+> Để có giá realtime không trễ cho CK VN: cần tài khoản TradingView trả phí hoặc dùng vnstock intraday trực tiếp.
+
+---
+
+## Troubleshooting
+
+**❌ `tv_health_check` trả về lỗi "fetch failed"**
+→ TradingView chưa chạy với debug port. Chạy lại Bước 9.
+→ Kiểm tra: mở trình duyệt vào `http://localhost:9222` — nếu thấy JSON là OK.
+
+**❌ Skills không xuất hiện trong Claude**
+→ Kiểm tra đã copy vào đúng thư mục `~/.claude/skills/` chưa.
+→ Tắt hoàn toàn Claude Desktop (kể cả system tray) rồi mở lại.
+
+**❌ vnstock-mcp lỗi "command not found"**
+→ `pip install vnstock-agent` chưa được thêm vào PATH.
+→ Thử: `python -m vnstock_agent.mcp` thay cho `vnstock-mcp`.
+
+**❌ Cài đặt Windows: "execution policy" error**
+→ Chạy lệnh này trước: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
+
+**❌ vnstocks.com không đăng nhập được (lỗi OAuth)**
+→ Bỏ qua API key, xoá dòng `VNSTOCK_API_KEY` trong config.
+→ Guest mode vẫn hoạt động: 20 req/phút, 4 kỳ BCTC.
+
+**❌ TradingView bản MSIX không tìm thấy exe**
+→ Dùng `scripts/launch-tv-msix.ps1` thay vì `.bat` (yêu cầu PowerShell Admin).
 
 ---
 
@@ -156,17 +376,17 @@ Restart Claude Desktop → bắt đầu sử dụng.
 vn-trading-analyst/
 ├── .claude/
 │   └── skills/
-│       ├── vn-analyze/     # Flagship: phân tích toàn diện
-│       ├── vn-technical/   # Kỹ thuật via TradingView
-│       ├── vn-fundamental/ # Cơ bản via vnstock
-│       ├── vn-market/      # Tổng quan thị trường
-│       └── vn-report/      # Xuất báo cáo HTML
+│       ├── vn-analyze/       # Flagship: phân tích toàn diện
+│       ├── vn-technical/     # Kỹ thuật via TradingView
+│       ├── vn-fundamental/   # Cơ bản via vnstock
+│       ├── vn-market/        # Tổng quan thị trường
+│       └── vn-report/        # Xuất báo cáo HTML
 ├── config/
-│   └── claude-desktop-config-template.json
+│   └── claude-desktop-config-template.json   # Template cấu hình MCP
 ├── scripts/
-│   ├── setup-mcps.sh        # Cài đặt tự động
-│   ├── launch-tv-msix.ps1   # Khởi động TV (Windows Store)
-│   └── launch_tv_debug.bat  # Khởi động TV (Windows .exe)
+│   ├── setup-mcps.sh          # Cài đặt tự động (macOS/Linux)
+│   ├── launch-tv-msix.ps1     # Khởi động TV bản Store (Windows Admin)
+│   └── launch_tv_debug.bat    # Khởi động TV bản .exe (Windows)
 └── README.md
 ```
 
