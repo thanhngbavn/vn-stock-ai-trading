@@ -49,7 +49,7 @@ Nếu thiếu tool nào → báo user tải về:
 ### Bước 3 — Cài vnstock-agent
 
 ```bash
-pip install vnstock-agent
+pip install git+https://github.com/mrgoonie/vnstock-agent.git
 ```
 
 Kiểm tra: `vnstock-mcp --help`

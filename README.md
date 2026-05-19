@@ -96,7 +96,9 @@ node --version   # phải ra v18+ hoặc cao hơn
 
 Tải Claude Desktop từ https://claude.ai/download → cài và đăng nhập.
 
-> Claude Desktop là bắt buộc — bản web (claude.ai trên trình duyệt) không hỗ trợ MCP.
+> **Quan trọng:** Skills (`/vn-analyze`, `/vn-market`...) chỉ chạy trong **Claude Code CLI** (gõ `claude` trong terminal), không phải Claude Desktop app.  
+> Claude Desktop vẫn cần để dùng MCP — nhưng các slash commands phải chạy qua CLI.  
+> Cài Claude Desktop → đăng nhập → sau đó mở terminal gõ `claude` để dùng skills.
 
 ---
 
@@ -114,7 +116,7 @@ Tải TradingView Desktop từ https://www.tradingview.com/desktop
 Mở PowerShell hoặc Terminal, chạy:
 
 ```powershell
-pip install vnstock-agent
+pip install git+https://github.com/mrgoonie/vnstock-agent.git
 ```
 
 Kiểm tra:
@@ -357,7 +359,7 @@ Kiểm tra kết nối TradingView: dùng tv_health_check
 → Tắt hoàn toàn Claude Desktop (kể cả system tray) rồi mở lại.
 
 **❌ vnstock-mcp lỗi "command not found"**
-→ `pip install vnstock-agent` chưa được thêm vào PATH.
+→ Chạy lại: `pip install git+https://github.com/mrgoonie/vnstock-agent.git`
 → Thử thay `"command": "vnstock-mcp"` thành `"command": "python"` và `"args": ["-m", "vnstock_agent.mcp"]` trong `claude_desktop_config.json`.
 
 **❌ Cài đặt Windows: "execution policy" error**

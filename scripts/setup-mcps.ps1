@@ -29,7 +29,7 @@ try {
 
 # 3. Install vnstock-agent
 Write-Host "[3/5] Installing vnstock-agent..." -ForegroundColor Yellow
-pip install vnstock-agent -q
+pip install git+https://github.com/mrgoonie/vnstock-agent.git -q
 Write-Host "      OK: vnstock-agent installed" -ForegroundColor Green
 Write-Host "      -> Get free API key at: https://vnstocks.com/login (optional)" -ForegroundColor Gray
 
