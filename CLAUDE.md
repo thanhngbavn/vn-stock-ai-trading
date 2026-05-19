@@ -24,7 +24,26 @@ Setup này configure cho **cả hai** — user chọn dùng nào cũng được.
 
 # ⚙️ AUTO-SETUP PROTOCOL
 
-**Khi user nói "cài"/"setup"/"install"** → chạy lần lượt 8 bước. KHÔNG dừng lại hỏi user trừ khi gặp lỗi không tự fix được.
+**Khi user nói "cài"/"setup"/"install"** → chạy lần lượt theo thứ tự bên dưới. KHÔNG dừng lại hỏi user trừ khi gặp lỗi không tự fix được.
+
+## ⚡ Fast path — dùng quick-setup script (KHUYẾN NGHỊ)
+
+Nếu user đang ở Windows, **CHỈ CẦN CHẠY 1 LỆNH**:
+```powershell
+.\scripts\quick-setup.ps1
+```
+Script này tự làm bước 2-6 bên dưới (prereq check, vnstock-agent, tradingview-mcp, copy skills, update Claude Desktop config). Sau khi xong, nhảy thẳng đến Bước 7 (launch TradingView) + Bước 8 (restart Claude).
+
+macOS/Linux:
+```bash
+./scripts/setup-mcps.sh
+```
+
+⚠️ **Quan trọng về session Claude Code CLI:**
+- Nếu user clone repo LẦN ĐẦU rồi gõ `claude` → `.mcp.json` tự load → `/vn-market` chạy NGAY sau khi setup xong.
+- Nếu user `git pull` repo về (lúc đã có session đang chạy) → MCP CHƯA load trong session hiện tại → user PHẢI exit (`/exit`) rồi gõ `claude` lại từ thư mục repo. Báo user rõ điều này.
+
+## Manual path (nếu script lỗi)
 
 ## Bước 1 — Detect OS
 
@@ -232,7 +251,8 @@ vn-stock-ai-trading/
 ├── config/
 │   └── claude-desktop-config-template.json
 └── scripts/
-    ├── setup-mcps.ps1           ← Windows installer
+    ├── quick-setup.ps1          ← ⚡ ONE-COMMAND Windows installer (recommended)
+    ├── setup-mcps.ps1           ← Windows installer (legacy)
     ├── setup-mcps.sh            ← macOS/Linux installer
     ├── launch-tv-msix.ps1       ← TradingView Store launcher (Admin)
     └── launch_tv_debug.bat      ← TradingView .exe launcher

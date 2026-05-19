@@ -66,7 +66,34 @@ TradingView MCP      vnstock MCP
 
 ---
 
-## Cài đặt từng bước
+## ⚡ Cài nhanh — 1 lệnh duy nhất (Khuyến nghị)
+
+**Windows:**
+```powershell
+git clone https://github.com/andyluu98/vn-stock-ai-trading.git
+cd vn-stock-ai-trading
+.\scripts\quick-setup.ps1
+```
+
+**macOS/Linux:**
+```bash
+git clone https://github.com/andyluu98/vn-stock-ai-trading.git
+cd vn-stock-ai-trading
+./scripts/setup-mcps.sh
+```
+
+Script tự cài hết: vnstock-agent (từ vendor), tradingview-mcp, skills, Claude Desktop config.
+
+Sau đó còn 2 việc **manual** (script không thể tự làm vì cần Admin):
+1. Khởi động TradingView debug port: `& .\scripts\launch-tv-msix.ps1` (PowerShell **Admin**)
+2. Restart Claude Desktop (tắt cả icon system tray)
+3. Mở terminal trong thư mục repo → gõ `claude` → thử `/vn-market`
+
+> **Quan trọng:** Phải `cd vn-stock-ai-trading` TRƯỚC khi gõ `claude` — `.mcp.json` ở repo root chỉ load khi Claude Code CLI khởi động trong thư mục đó.
+
+---
+
+## Hoặc cài đặt từng bước (nếu script lỗi)
 
 ### Bước 1 — Python
 
