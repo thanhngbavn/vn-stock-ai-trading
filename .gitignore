@@ -1,0 +1,32 @@
+# Claude Code internal session state
+.claude/session-state/
+.claude/projects/
+.claude/todos/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Generated reports (user output)
+reports/
+
+# Local env / secrets
+.env
+.env.local
+*.key
