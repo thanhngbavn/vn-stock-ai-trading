@@ -345,8 +345,26 @@ def fund_listing() -> str:
 # --- Server entry point ---
 
 
+def _prewarm_imports():
+    """Pre-import heavy vnstock modules to reduce first tool-call latency.
+
+    Safe to call before mcp.run() because bare imports don't print banners —
+    banners only print on actual API calls (handled by _quiet_stdout in core.py).
+    """
+    try:
+        from vnstock import Vnstock  # noqa: F401
+        from vnstock.api.listing import Listing  # noqa: F401
+        from vnstock.api.trading import Trading  # noqa: F401
+    except Exception:
+        pass  # Non-fatal: server still works, just slower on first call
+
+
 def run():
     """Run the MCP server with configured transport."""
+    # Pre-warm imports so first tool call is fast (~3s) instead of slow (~8s).
+    # This adds ~6s to startup but stays well within Claude Code's init timeout.
+    _prewarm_imports()
+
     transport = TRANSPORT.lower()
     if transport == "stdio":
         mcp.run(transport="stdio")

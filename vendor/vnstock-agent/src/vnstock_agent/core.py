@@ -1,6 +1,9 @@
 """Core wrapper around vnstock library - shared by MCP server and CLI."""
 
+import contextlib
+import io
 import logging
+import sys
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -13,6 +16,17 @@ logger = logging.getLogger(__name__)
 # Suppress vnstock verbose logging
 logging.getLogger("vnstock").setLevel(logging.WARNING)
 logging.getLogger("vnai").setLevel(logging.WARNING)
+
+
+@contextlib.contextmanager
+def _quiet_stdout():
+    """Context manager that suppresses stdout (vnstock/vnai prints banners to stdout)."""
+    old_stdout = sys.stdout
+    sys.stdout = io.StringIO()
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout
 
 
 def _df_to_records(df) -> list[dict]:
@@ -68,8 +82,9 @@ def _get_stock(symbol: str, source: str = DEFAULT_SOURCE):
     """Get stock components for a symbol."""
     ensure_api_key()
     from vnstock import Vnstock
-    vs = Vnstock(source=source, show_log=False)
-    return vs.stock(symbol=symbol, source=source)
+    with _quiet_stdout():
+        vs = Vnstock(source=source, show_log=False)
+        return vs.stock(symbol=symbol, source=source)
 
 
 # --- Quote tools ---
@@ -84,7 +99,8 @@ def stock_history(
     """Get historical OHLCV data for a stock symbol."""
     start, end = _default_dates(start, end)
     stock = _get_stock(symbol, source)
-    df = stock.quote.history(start=start, end=end, interval=interval)
+    with _quiet_stdout():
+        df = stock.quote.history(start=start, end=end, interval=interval)
     return _df_to_records(df)
 
 
@@ -95,7 +111,8 @@ def stock_intraday(
 ) -> list[dict]:
     """Get intraday trading data for a stock symbol."""
     stock = _get_stock(symbol, source)
-    df = stock.quote.intraday(page_size=page_size)
+    with _quiet_stdout():
+        df = stock.quote.intraday(page_size=page_size)
     return _df_to_records(df)
 
 
@@ -105,7 +122,8 @@ def stock_price_depth(
 ) -> list[dict]:
     """Get order book / price depth data."""
     stock = _get_stock(symbol, source)
-    return _safe_call(stock.quote.price_depth)
+    with _quiet_stdout():
+        return _safe_call(stock.quote.price_depth)
 
 
 # --- Company tools ---
@@ -113,35 +131,40 @@ def stock_price_depth(
 def company_overview(symbol: str, source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get company overview information."""
     stock = _get_stock(symbol, source)
-    result = stock.company.overview()
+    with _quiet_stdout():
+        result = stock.company.overview()
     return _df_to_records(result)
 
 
 def company_shareholders(symbol: str, source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get major shareholders of a company."""
     stock = _get_stock(symbol, source)
-    result = stock.company.shareholders()
+    with _quiet_stdout():
+        result = stock.company.shareholders()
     return _df_to_records(result)
 
 
 def company_officers(symbol: str, source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get company officers / management team."""
     stock = _get_stock(symbol, source)
-    result = stock.company.officers()
+    with _quiet_stdout():
+        result = stock.company.officers()
     return _df_to_records(result)
 
 
 def company_news(symbol: str, source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get company news."""
     stock = _get_stock(symbol, source)
-    result = stock.company.news()
+    with _quiet_stdout():
+        result = stock.company.news()
     return _df_to_records(result)
 
 
 def company_events(symbol: str, source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get company events (dividends, AGM, etc)."""
     stock = _get_stock(symbol, source)
-    result = stock.company.events()
+    with _quiet_stdout():
+        result = stock.company.events()
     return _df_to_records(result)
 
 
@@ -154,7 +177,8 @@ def financial_balance_sheet(
 ) -> list[dict]:
     """Get balance sheet data."""
     stock = _get_stock(symbol, source)
-    result = stock.finance.balance_sheet(period=period)
+    with _quiet_stdout():
+        result = stock.finance.balance_sheet(period=period)
     return _df_to_records(result)
 
 
@@ -165,7 +189,8 @@ def financial_income_statement(
 ) -> list[dict]:
     """Get income statement data."""
     stock = _get_stock(symbol, source)
-    result = stock.finance.income_statement(period=period)
+    with _quiet_stdout():
+        result = stock.finance.income_statement(period=period)
     return _df_to_records(result)
 
 
@@ -176,7 +201,8 @@ def financial_cash_flow(
 ) -> list[dict]:
     """Get cash flow statement data."""
     stock = _get_stock(symbol, source)
-    result = stock.finance.cash_flow(period=period)
+    with _quiet_stdout():
+        result = stock.finance.cash_flow(period=period)
     return _df_to_records(result)
 
 
@@ -187,7 +213,8 @@ def financial_ratio(
 ) -> list[dict]:
     """Get financial ratios."""
     stock = _get_stock(symbol, source)
-    result = stock.finance.ratio(period=period)
+    with _quiet_stdout():
+        result = stock.finance.ratio(period=period)
     return _df_to_records(result)
 
 
@@ -197,8 +224,9 @@ def listing_all_symbols(source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get all listed stock symbols."""
     ensure_api_key()
     from vnstock.api.listing import Listing
-    lst = Listing(source=source.lower())
-    df = lst.all_symbols()
+    with _quiet_stdout():
+        lst = Listing(source=source.lower())
+        df = lst.all_symbols()
     return _df_to_records(df)
 
 
@@ -206,8 +234,9 @@ def listing_symbols_by_group(group: str = "VN30", source: str = DEFAULT_SOURCE) 
     """Get symbols by market group (VN30, HNX30, HOSE, etc)."""
     ensure_api_key()
     from vnstock.api.listing import Listing
-    lst = Listing(source=source.lower())
-    df = lst.symbols_by_group(group=group)
+    with _quiet_stdout():
+        lst = Listing(source=source.lower())
+        df = lst.symbols_by_group(group=group)
     return _df_to_records(df)
 
 
@@ -215,8 +244,9 @@ def listing_symbols_by_exchange(source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get symbols grouped by exchange."""
     ensure_api_key()
     from vnstock.api.listing import Listing
-    lst = Listing(source=source.lower())
-    df = lst.symbols_by_exchange()
+    with _quiet_stdout():
+        lst = Listing(source=source.lower())
+        df = lst.symbols_by_exchange()
     return _df_to_records(df)
 
 
@@ -224,8 +254,9 @@ def listing_industries(source: str = DEFAULT_SOURCE) -> list[dict]:
     """Get ICB industry classification."""
     ensure_api_key()
     from vnstock.api.listing import Listing
-    lst = Listing(source=source.lower())
-    df = lst.industries_icb()
+    with _quiet_stdout():
+        lst = Listing(source=source.lower())
+        df = lst.industries_icb()
     return _df_to_records(df)
 
 
@@ -238,24 +269,13 @@ def trading_price_board(
     """Get price board for multiple symbols."""
     ensure_api_key()
     from vnstock.api.trading import Trading
-    t = Trading(source=source.lower())
-    df = t.price_board(symbols_list=symbols)
+    with _quiet_stdout():
+        t = Trading(source=source.lower())
+        df = t.price_board(symbols_list=symbols)
     return _df_to_records(df)
 
 
 # --- Global market tools ---
-
-def _suppress_stdout(fn, *args, **kwargs):
-    """Call function with stdout suppressed (vnstock/vnai prints to stdout)."""
-    import sys
-    import io
-    old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
-    try:
-        return fn(*args, **kwargs)
-    finally:
-        sys.stdout = old_stdout
-
 
 def fx_history(
     symbol: str = "EURUSD",
@@ -268,9 +288,10 @@ def fx_history(
     start, end = _default_dates(start, end)
     try:
         from vnstock import Vnstock
-        vs = _suppress_stdout(Vnstock, source="MSN", show_log=False)
-        pair = vs.fx(symbol=symbol)
-        df = pair.quote.history(start=start, end=end, interval=interval)
+        with _quiet_stdout():
+            vs = Vnstock(source="MSN", show_log=False)
+            pair = vs.fx(symbol=symbol)
+            df = pair.quote.history(start=start, end=end, interval=interval)
         return _df_to_records(df)
     except Exception as e:
         return [{"error": str(e)}]
@@ -287,9 +308,10 @@ def crypto_history(
     start, end = _default_dates(start, end)
     try:
         from vnstock import Vnstock
-        vs = _suppress_stdout(Vnstock, source="MSN", show_log=False)
-        coin = vs.crypto(symbol=symbol)
-        df = coin.quote.history(start=start, end=end, interval=interval)
+        with _quiet_stdout():
+            vs = Vnstock(source="MSN", show_log=False)
+            coin = vs.crypto(symbol=symbol)
+            df = coin.quote.history(start=start, end=end, interval=interval)
         return _df_to_records(df)
     except Exception as e:
         return [{"error": str(e)}]
@@ -306,9 +328,10 @@ def world_index_history(
     start, end = _default_dates(start, end)
     try:
         from vnstock import Vnstock
-        vs = _suppress_stdout(Vnstock, source="MSN", show_log=False)
-        idx = vs.world_index(symbol=symbol)
-        df = idx.quote.history(start=start, end=end, interval=interval)
+        with _quiet_stdout():
+            vs = Vnstock(source="MSN", show_log=False)
+            idx = vs.world_index(symbol=symbol)
+            df = idx.quote.history(start=start, end=end, interval=interval)
         return _df_to_records(df)
     except Exception as e:
         return [{"error": str(e)}]
@@ -320,7 +343,8 @@ def fund_listing() -> list[dict]:
     """Get list of open-ended mutual funds."""
     ensure_api_key()
     from vnstock import Vnstock
-    vs = Vnstock(show_log=False)
-    f = vs.fund()
-    df = f.listing()
+    with _quiet_stdout():
+        vs = Vnstock(show_log=False)
+        f = vs.fund()
+        df = f.listing()
     return _df_to_records(df)
