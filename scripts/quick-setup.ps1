@@ -1,4 +1,4 @@
-# quick-setup.ps1 — One-command Windows setup for vn-stock-ai-trading
+# quick-setup.ps1 - One-command Windows setup for vn-stock-ai-trading
 # Usage: from repo root, run:  .\scripts\quick-setup.ps1
 # Does EVERYTHING except launching TradingView (needs Admin separately)
 
@@ -7,7 +7,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 
 Write-Host ""
 Write-Host "===========================================" -ForegroundColor Cyan
-Write-Host "  vn-stock-ai-trading — Quick Setup" -ForegroundColor Cyan
+Write-Host "  vn-stock-ai-trading - Quick Setup" -ForegroundColor Cyan
 Write-Host "===========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -35,7 +35,7 @@ pip install --user $vendorPath -q 2>&1 | Out-String -Stream | Where-Object { $_ 
 if (Get-Command vnstock-mcp -ErrorAction SilentlyContinue) {
     Write-Host "  OK: vnstock-mcp available" -ForegroundColor Green
 } else {
-    Write-Host "  WARN: vnstock-mcp not in PATH — add Python Scripts folder to PATH" -ForegroundColor Yellow
+    Write-Host "  WARN: vnstock-mcp not in PATH - add Python Scripts folder to PATH" -ForegroundColor Yellow
 }
 
 # 3. Clone & install tradingview-mcp
@@ -76,7 +76,7 @@ if (-not $json.mcpServers) {
 }
 $tvPath = "$HOME\tradingview-mcp\src\server.js"
 $json.mcpServers | Add-Member -Name "tradingview" -Value ([PSCustomObject]@{command="node"; args=@($tvPath)}) -MemberType NoteProperty -Force
-# Use 'python -m vnstock_agent.server' — works even if Python Scripts not in PATH
+# Use 'python -m vnstock_agent.server' - works even if Python Scripts not in PATH
 $json.mcpServers | Add-Member -Name "vnstock" -Value ([PSCustomObject]@{
     command="python"; args=@("-m","vnstock_agent.server")
 }) -MemberType NoteProperty -Force

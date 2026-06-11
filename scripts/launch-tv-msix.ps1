@@ -23,7 +23,7 @@ $tvExe = Join-Path $tvFolder.FullName "TradingView.exe"
 try {
     Get-Acl $tvExe -ErrorAction Stop | Out-Null
 } catch {
-    Write-Host "      Access denied — taking ownership..." -ForegroundColor Yellow
+    Write-Host "      Access denied - taking ownership..." -ForegroundColor Yellow
     takeown /f $tvFolder.FullName /r /d y 2>$null | Out-Null
     icacls $tvFolder.FullName /grant "Administrators:(OI)(CI)F" /t /q 2>$null | Out-Null
 }
@@ -63,7 +63,8 @@ for ($i = 0; $i -lt 15; $i++) {
         $ready = $true
         break
     } catch {
-        Write-Host "  Still waiting ($($i*2+2)s)..." -ForegroundColor Gray
+        $sec = ($i * 2) + 2
+        Write-Host "  Still waiting ${sec}s..." -ForegroundColor Gray
     }
 }
 

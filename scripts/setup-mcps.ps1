@@ -1,4 +1,4 @@
-# setup-mcps.ps1 — vn-stock-ai-trading setup for Windows
+# setup-mcps.ps1 - vn-stock-ai-trading setup for Windows
 # Run in PowerShell (no Admin required)
 
 $ErrorActionPreference = "Stop"
@@ -38,7 +38,7 @@ Write-Host "      -> Get free API key at: https://vnstocks.com/login (optional)"
 Write-Host "[4/5] Setting up tradingview-mcp..." -ForegroundColor Yellow
 $tvDir = "$HOME\tradingview-mcp"
 if (Test-Path $tvDir) {
-    Write-Host "      Already exists at $tvDir — skipping clone" -ForegroundColor Gray
+    Write-Host "      Already exists at $tvDir - skipping clone" -ForegroundColor Gray
 } else {
     git clone https://github.com/tradesdontlie/tradingview-mcp.git $tvDir
     Push-Location $tvDir
@@ -52,12 +52,13 @@ Write-Host "[5/5] Installing skills..." -ForegroundColor Yellow
 $skillsDest = "$HOME\.claude\skills"
 New-Item -ItemType Directory -Force -Path $skillsDest | Out-Null
 $skillsSrc = Join-Path $PSScriptRoot "..\\.claude\\skills"
-$skillsSrc = (Resolve-Path $skillsSrc -ErrorAction SilentlyContinue)?.Path
+$resolved = Resolve-Path $skillsSrc -ErrorAction SilentlyContinue
+$skillsSrc = if ($resolved) { $resolved.Path } else { $null }
 if ($skillsSrc -and (Test-Path $skillsSrc)) {
     Copy-Item -Recurse -Force "$skillsSrc\*" $skillsDest
     Write-Host "      OK: skills copied to $skillsDest" -ForegroundColor Green
 } else {
-    Write-Host "      WARN: skills folder not found — run this script from repo root" -ForegroundColor Yellow
+    Write-Host "      WARN: skills folder not found - run this script from repo root" -ForegroundColor Yellow
 }
 
 # Done
